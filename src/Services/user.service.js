@@ -6,15 +6,16 @@ const jwt = require("jsonwebtoken");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 const HttpException = require("../core/HttpException");
 const OTP = require("../Models/OTP.model");
+const Profile = require("../Models/Profile.model");
 
 const createToken = (_id) => {
   const jwkey = process.env.JWT_SECRET_KEY;
-  return jwt.sign({ _id }, jwkey, { expiresIn: "5m" });
+  return jwt.sign({ _id }, jwkey, { expiresIn: "1m" });
 };
 
 const createRefreshToken = (_id) => {
   const refreshKey = process.env.REFRESH_SECRET_KEY;
-  return jwt.sign({ _id }, refreshKey, { expiresIn: "30d" });
+  return jwt.sign({ _id }, refreshKey, { expiresIn: "365d" });
 };
 
 const verifyRefreshToken = (token) => {
@@ -63,6 +64,7 @@ const UserService = {
         status: true,
         role: "user",
       });
+      
       await newUser.save();
       return newUser;
     } catch (error) {
@@ -98,10 +100,7 @@ const UserService = {
       const refreshToken = createRefreshToken(user._id);
 
       return {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        status: user.status,
+        user: user,
         token: token,
         refreshToken: refreshToken,
       };

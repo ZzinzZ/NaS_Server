@@ -14,18 +14,12 @@ const ProfileController = {
         experience,
         birthday,
       } = req.body;
-      const avatar = req.files["avatar"] ? req.files["avatar"][0].path : null;
-      const background = req.files["background"]
-        ? req.files["background"][0].path
-        : null;
       const parsedEducation = JSON.parse(education);
       const parsedExperience = JSON.parse(experience);
       const result = await ProfileService.createProfile({
         userId,
         location,
-        background,
         experience: parsedExperience,
-        avatar,
         education: parsedEducation,
         birthday,
         relationship,
@@ -55,49 +49,72 @@ const ProfileController = {
       next(error);
     }
   },
+  //Update profile avatar
+  updateProfileAvatar: async (req, res, next) => {
+    try {
+      const { profileId } = req.body;
+      const avatar = req.file;
+
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // update profile cover image
+  updateProfileCoverImage: async (req, res, next) => {
+    try {
+      const { profileId } = req.params;
+      const { coverImage } = req.body;
+      const result = await ProfileService.updateProfileCoverImage({
+        profileId,
+        coverImage,
+      });
+      res.ok(USER_MESSAGES.PROFILE_UPDATE_COVER_IMAGE_SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
   // update profile
   updateProfile: async (req, res, next) => {
     try {
-        const { profileId } = req.params;
-        const {
-            location,
-            education,
-            relationship,
-            experience,
-            birthday,
-        } = req.body;
+      const { profileId } = req.params;
+      const {
+        location,
+        education,
+        relationship,
+        experience,
+        birthday,
+        gender,
+        bio,
+      } = req.body;
 
-        const avatar = req.files["avatar"] ? req.files["avatar"][0].path : null;
-        const background = req.files["background"] ? req.files["background"][0].path : null;
+      let parsedEducation;
+      let parsedExperience;
 
-        let parsedEducation;
-        let parsedExperience;
+      if (education !== undefined) {
+        parsedEducation = JSON.parse(education);
+      }
 
-        if (education !== undefined) {
-            parsedEducation = JSON.parse(education);
-        }
+      if (experience !== undefined) {
+        parsedExperience = JSON.parse(experience);
+      }
 
-        if (experience !== undefined) {
-            parsedExperience = JSON.parse(experience);
-        }
+      const result = await ProfileService.updateProfile({
+        profileId,
+        location,
+        experience: parsedExperience,
+        education: parsedEducation,
+        birthday,
+        relationship,
+        gender,
+        bio,
+      });
 
-        const result = await ProfileService.updateProfile({
-            profileId,
-            location,
-            background: background || undefined,  // Only pass if not null
-            experience: parsedExperience,
-            avatar: avatar || undefined,  // Only pass if not null
-            education: parsedEducation,
-            birthday,
-            relationship,
-        });
-
-        res.ok(SYS_MESSAGE.SUCCESS, result);
+      res.ok(SYS_MESSAGE.SUCCESS, result);
     } catch (error) {
-        next(error);
+      next(error);
     }
-},
-
+  },
 
   // follow a profile
   followProfile: async (req, res, next) => {
@@ -184,11 +201,11 @@ const ProfileController = {
     }
   },
   //unfriend
-  unfriendUser: async(req, res, next) => {
+  unfriendUser: async (req, res, next) => {
     try {
-      const {userId} = req.params;
-      const {friendId} = req.body;
-      const result = await ProfileService.unfriendUser({userId, friendId})
+      const { userId } = req.params;
+      const { friendId } = req.body;
+      const result = await ProfileService.unfriendUser({ userId, friendId });
       res.ok(USER_MESSAGES.UNFRIEND_SUCCESS, result);
     } catch (error) {
       next(error);
@@ -211,12 +228,212 @@ const ProfileController = {
     try {
       const { unblockerId } = req.params;
       const { blockedId } = req.body;
-      const result = await ProfileService.unblockUser({ unblockerId, blockedId });
+      const result = await ProfileService.unblockUser({
+        unblockerId,
+        blockedId,
+      });
       res.ok(USER_MESSAGES.USER_UNBLOCKED_SUCCESS, result);
     } catch (error) {
       next(error);
     }
-  }
+  },
+  getListFriend: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const result = await ProfileService.getListFriend({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //
+  addExperience: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { company, position, start, end, status } = req.body;
+      const result = await ProfileService.addProfileExperience({
+        userId,
+        company,
+        position,
+        start,
+        end,
+        status
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //
+  deleteExperience: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { experienceId } = req.body;
+      const result = await ProfileService.deleteProfileExperience({
+        userId,
+        experienceId,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //
+  editExperience: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { experienceId, company, position, start, end, status } = req.body;
+      const result = await ProfileService.editProfileExperience({
+        userId,
+        experienceId,
+        company,
+        position,
+        start,
+        end,
+        status,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //
+  addEducation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { school, start, end } = req.body;
+      const result = await ProfileService.addProfileEducation({
+        userId,
+        school,
+        start,
+        end,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  deleteEducation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { educationId } = req.body;
+      console.log(req.body);
+      
+      const result = await ProfileService.deleteProfileEducation({
+        userId,
+        educationId,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  editEducation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { educationId, school, start, end, status } = req.body;
+      const result = await ProfileService.editProfileEducation({
+        userId,
+        educationId,
+        school,
+        start,
+        end,
+        status,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  addLocation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { type_location, city } = req.body;
+      const result = await ProfileService.addProfileLocation({
+        userId,
+        type_location,
+        city,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  deleteLocation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { locationId } = req.body;
+      const result = await ProfileService.deleteProfileLocation({
+        userId,
+        locationId,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  editLocation: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { locationId, type_location, city, status } = req.body;
+      const result = await ProfileService.editProfileLocation({
+        userId,
+        locationId,
+        type_location,
+        city,
+        status,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //edit profile relationships
+  editProfileRelationship: async(req, res, next) => {
+    try {
+      const userId = req.params;
+      const {type, status} = req.body;
+      const result = await ProfileService.editProfileRelationship({ userId, type, status });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //search profile
+  searchProfiles: async(req, res, next) => {
+    try {
+      const {userName , userId} = req.body;
+      const result = await ProfileService.searchProfiles({userName, userId});
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //get list request
+  getListFriendRequest: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const result = await ProfileService.getFriendRequest({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //get list request sent
+  getListFriendRequestSent: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const result = await ProfileService.getFriendRequestSent({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = ProfileController;

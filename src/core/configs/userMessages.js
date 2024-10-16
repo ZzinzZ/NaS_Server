@@ -7,7 +7,7 @@ const USER_MESSAGES = {
     ACCOUNT_DISABLED: "Account is disabled!",
     WRONG_PASSWORD: "Wrong password!",
     USER_REGISTER_SUCCESS: "User registered successfully",
-    USER_LOGIN_SUCCESS: "User logged in successfully",
+    USER_LOGIN_SUCCESS: "Welcome back!",
     USER_UPDATED_SUCCESS: "User updated successfully",
     USER_UPDATED_PASSWORD_SUCCESS: "User password updated successfully",
     OTP_SEND_SUCCESS: "OTP send successfully",
@@ -31,11 +31,14 @@ const USER_MESSAGES = {
     USER_ALREADY_BLOCKED: "You are already blocked this user",
     USER_BLOCKED_SUCCESS: "Blocked successfully",
     USER_UNBLOCKED_SUCCESS: "Unblocked successfully",
-    POST_LIKE_SUCCESS: "Post liked successfully",
-    POST_UNLIKE_SUCCESS: "Post unliked successfully",
-    POST_COMMENT_SUCCESS: "Post commented successfully",
-    POST_COMMENT_DELETE_SUCCESS: "Post comment deleted successfully",
-
+    POST_CREATED_SUCCESS: "Post created successfully",
+    POST_EMPTY: "Post has no content",
+    COMMENT_EMPTY: "Comment has no content",
+    USER_NO_POST: "The user has not posted anything yet",
+    POST_NOT_FOUND: "Post not found",
+    POST_COMMENT_DELETE_SUCCESS: "Your comment has been deleted",
+    REPLY_COMMENT_NOT_FOUND:"Comment not found",
+    SHARE_POST_SUCCESS: "Share the article successfully",
 }
 
 module.exports = {USER_MESSAGES};

@@ -7,13 +7,15 @@ const okResponse  = require("./middlewares/okResponse");
 //Route
 const UserRoute = require("../src/Routes/user.route");
 const ProfileRoute = require("../src/Routes/profile.route");
+const PostRoute = require("../src/Routes/post.route");
+const SearchHistoryRoute = require("../src/Routes/searchHistory.route");
 
 
 const app = express();
 
 const corsOptions = {
   origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', "x-auth-token"]
 };
 // config ENV
@@ -36,13 +38,15 @@ app.use(okResponse);
 
 // Initialize Route
 app.use("/api/v1/users", UserRoute);
-
 app.use("/api/v1/profiles", ProfileRoute);
+app.use("/api/v1/posts", PostRoute);
+
+app.use("/api/v1/search", SearchHistoryRoute);
 
 
 // Initialize Application
 app.get('/', (req, res) => {
-    res.send("Api is available!");
+    res.send("NaS api is available!");
 })
 
 
