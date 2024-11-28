@@ -33,7 +33,7 @@ const PostController = {
     try {
       const { userId, content } = req.body;
       
-      
+       
       const pictures = req.files ? req.files.map((file) => file.path) : [];
       console.log(pictures);
       const article = await PostService.createArticlePost({

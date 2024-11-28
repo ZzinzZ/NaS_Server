@@ -2,10 +2,6 @@ const HttpException = require("../core/HttpException");
 const User = require("../Models/User.model");
 const Profile = require("../Models/Profile.model");
 const SearchHistory = require("../Models/SearchHistory.model");
-const {
-  USER_AVATAR_ORIGINAL,
-  USER_BACKGROUND_ORIGINAL,
-} = require("../core/configs/profile.config");
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 
@@ -21,7 +17,7 @@ const ProfileService = {
     bio,
     gender,
   }) => {
-    try {
+    
       const user = await User.findOne({ _id: userId });
       if (!user) {
         throw new HttpException(404, SYS_MESSAGE.NO_USER);
@@ -53,26 +49,22 @@ const ProfileService = {
       });
       await newProfile.save();
       return newProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
 
   getProfileById: async ({ profileId }) => {
-    try {
+    
       const profile = await Profile.findById({ _id: profileId });
       if (!profile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
       }
       return profile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
 
   //get profile by userId
   getProfileByUserId: async ({ userId }) => {
-    try {
+    
       const profile = await Profile.findOne({ userId: userId })
         .populate("avatar")
         .populate("background")
@@ -81,9 +73,7 @@ const ProfileService = {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
       }
       return profile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // update a profile
   updateProfile: async ({
@@ -96,7 +86,7 @@ const ProfileService = {
     gender,
     bio,
   }) => {
-    try {
+    
       const updateFields = {};
 
       if (location !== undefined) updateFields.location = location;
@@ -119,14 +109,12 @@ const ProfileService = {
       }
 
       return profile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
 
   //follow profile
   followProfile: async ({ followerId, followedId }) => {
-    try {
+    
       const followerProfile = await Profile.findOne({ userId: followerId })
         .populate("avatar")
         .exec();
@@ -147,13 +135,11 @@ const ProfileService = {
       await followerProfile.save();
       await followedProfile.save();
       return followerProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //unfollow profile
   unfollowProfile: async ({ followerId, followedId }) => {
-    try {
+    
       const followerProfile = await Profile.findOne({ userId: followerId })
         .populate("avatar")
         .exec();
@@ -175,13 +161,11 @@ const ProfileService = {
       await followerProfile.save();
       await followedProfile.save();
       return followerProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //send add friend request
   addFriendRequest: async ({ senderId, receptionId }) => {
-    try {
+    
       const senderProfile = await Profile.findOne({ userId: senderId })
         .populate("avatar")
         .exec();
@@ -206,13 +190,11 @@ const ProfileService = {
       await senderProfile.save();
       await receiverProfile.save();
       return senderProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //accept friend request
   acceptFriendRequest: async ({ senderId, receiverId }) => {
-    try {
+    
       const senderProfile = await Profile.findOne({ userId: senderId });
       const receiverProfile = await Profile.findOne({ userId: receiverId })
         .populate("avatar")
@@ -235,13 +217,11 @@ const ProfileService = {
       await senderProfile.save();
       await receiverProfile.save();
       return receiverProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //remove the request
   removeFriendRequest: async ({ senderId, receiverId }) => {
-    try {
+    
       const senderProfile = await Profile.findOne({ userId: senderId })
         .populate("avatar")
         .exec();
@@ -262,14 +242,12 @@ const ProfileService = {
       await senderProfile.save();
       await receiverProfile.save();
       return senderProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
 
   // reject requests
   rejectFriendRequest: async ({ senderId, receiverId }) => {
-    try {
+    
       const senderProfile = await Profile.findOne({ userId: senderId });
       const receiverProfile = await Profile.findOne({ userId: receiverId })
         .populate("avatar")
@@ -286,13 +264,11 @@ const ProfileService = {
       receiverProfile.friend_request.splice(requestIndex, 1);
       await receiverProfile.save();
       return receiverProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //unfriend user profile
   unfriendUser: async ({ userId, friendId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId: userId });
       const friendProfile = await Profile.findOne({ userId: friendId });
       if (!userProfile || !friendProfile) {
@@ -309,16 +285,14 @@ const ProfileService = {
       friendProfile.friends = friendProfile.friends.filter(
         (friend) => friend.userId.toString() !== userId
       );
-      await userProfile.save();  
+      await userProfile.save();
       await friendProfile.save();
       return userProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //block user
   blockUser: async ({ blockerId, blockedId }) => {
-    try {
+    
       const blockerProfile = await Profile.findOne({ userId: blockerId })
         .populate("avatar")
         .exec();
@@ -348,13 +322,11 @@ const ProfileService = {
       await blockedProfile.save();
 
       return blockerProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //unblock user
   unblockUser: async ({ unblockerId, blockedId }) => {
-    try {
+    
       const unblockerProfile = await Profile.findOne({ userId: unblockerId })
         .populate("avatar")
         .exec();
@@ -381,13 +353,11 @@ const ProfileService = {
       await blockedProfile.save();
 
       return unblockerProfile;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //get list friend
   getListFriend: async ({ userId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -398,13 +368,11 @@ const ProfileService = {
         .exec();
 
       return friendsProfiles;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // get list friend request
   getFriendRequest: async ({ userId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -419,12 +387,10 @@ const ProfileService = {
         .populate("avatar")
         .exec();
       return friendRequestProfiles;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
-  getFriendRequestSent: async ({userId}) => {
-    try {
+  getFriendRequestSent: async ({ userId }) => {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -439,9 +405,7 @@ const ProfileService = {
         .populate("avatar")
         .exec();
       return friendRequestProfiles;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // add profile experience
   addProfileExperience: async ({
@@ -452,7 +416,7 @@ const ProfileService = {
     end,
     status,
   }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -478,13 +442,11 @@ const ProfileService = {
 
       await userProfile.save();
       return userProfile.experience;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // delete profile experience
   deleteProfileExperience: async ({ userId, experienceId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -498,13 +460,11 @@ const ProfileService = {
       userProfile.experience.splice(experienceIndex, 1);
       await userProfile.save();
       return userProfile.experience;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // add profile education
   addProfileEducation: async ({ userId, school, start, end }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -512,13 +472,11 @@ const ProfileService = {
       userProfile.education.push({ school, start, end, status: true });
       await userProfile.save();
       return userProfile.education;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // delete profile education
   deleteProfileEducation: async ({ userId, educationId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -533,13 +491,11 @@ const ProfileService = {
       userProfile.education.splice(educationIndex, 1);
       await userProfile.save();
       return userProfile.education;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // add profile location
   addProfileLocation: async ({ userId, type_location, city }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -562,13 +518,11 @@ const ProfileService = {
       userProfile.location.push({ type_location, city, status: true });
       await userProfile.save();
       return userProfile.location;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // delete profile location
   deleteProfileLocation: async ({ userId, locationId }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId: userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -582,9 +536,7 @@ const ProfileService = {
       userProfile.location.splice(locationIndex, 1);
       await userProfile.save();
       return userProfile.location;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // edit profile experience
   editProfileExperience: async ({
@@ -596,7 +548,7 @@ const ProfileService = {
     end,
     status,
   }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -613,9 +565,7 @@ const ProfileService = {
 
       await userProfile.save();
       return userProfile.experience;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // edit profile education
   editProfileEducation: async ({
@@ -626,7 +576,7 @@ const ProfileService = {
     end,
     status,
   }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -642,9 +592,7 @@ const ProfileService = {
 
       await userProfile.save();
       return userProfile.education;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   // edit profile location
   editProfileLocation: async ({
@@ -654,7 +602,7 @@ const ProfileService = {
     city,
     status,
   }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -669,13 +617,11 @@ const ProfileService = {
 
       await userProfile.save();
       return userProfile.location;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //edit profile relationship
   editProfileRelationship: async ({ userId, type, status }) => {
-    try {
+    
       const userProfile = await Profile.findOne({ userId: userId });
       if (!userProfile) {
         throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
@@ -691,13 +637,11 @@ const ProfileService = {
       userProfile.relationship = { type, status };
       await userProfile.save();
       return userProfile.relationship;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
   //search profile
   searchProfiles: async ({ userName, userId }) => {
-    try {
+    
       const query = {};
 
       if (userName && typeof userName === "string") {
@@ -711,17 +655,25 @@ const ProfileService = {
         .exec();
 
       if (userName && userId) {
-        const newSearchHistory = new SearchHistory({
+        const existingSearch = await SearchHistory.findOne({
           keyword: userName,
-          userId: userId,
+          userId,
         });
-        await newSearchHistory.save();
+
+        if (existingSearch) {
+          existingSearch.updatedAt = new Date();
+          await existingSearch.save();
+        } else {
+          const newSearchHistory = new SearchHistory({
+            keyword: userName,
+            userId: userId,
+          });
+          await newSearchHistory.save();
+        }
       }
 
       return profiles;
-    } catch (error) {
-      throw new HttpException(error.status || 500, error.message || error);
-    }
+    
   },
 };
 

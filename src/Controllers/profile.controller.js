@@ -1,5 +1,6 @@
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
+const chatService = require("../Services/chat.service");
 const ProfileService = require("../Services/profile.service");
 
 const ProfileController = {
@@ -167,6 +168,7 @@ const ProfileController = {
         senderId,
         receiverId,
       });
+      await chatService.createPrivateChat({userId: receiverId, participantId: senderId});
       res.ok(USER_MESSAGES.FRIEND_REQUEST_ACCEPTED_SUCCESS, result);
     } catch (error) {
       next(error);

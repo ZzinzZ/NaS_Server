@@ -51,6 +51,8 @@ const UserController = {
 
       res.ok(USER_MESSAGES.USER_LOGIN_SUCCESS, result);
     } catch (error) {
+      console.log(error);
+      
       next(error);
     }
   },
