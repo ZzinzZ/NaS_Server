@@ -133,6 +133,15 @@ const chatController = {
       next(error);
     }
   },
+  getGroupChatList: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const chats = await chatService.getGroupChatList({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, chats);
+    } catch (error) {
+      next(error);
+    }
+  }
 };
 
 module.exports = chatController;

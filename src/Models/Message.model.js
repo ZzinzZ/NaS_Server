@@ -9,13 +9,20 @@ const MessagesSchema = new Schema(
     content: {
       file: [
         {
-          fileName: { type: String, required: true }, // Tên file
-          filePath: { type: String, required: true }, // URL để tải file
-          fileSize: { type: Number, required: true }, // Kích thước file
+          fileName: { type: String, required: true },
+          filePath: { type: String, required: true },
+          fileSize: { type: Number, required: true },
+          fileType: { type: String },
         },
       ],
       image: [{ type: String }],
       text: { type: String },
+      call: {
+        callDuration: { type: Number },
+        is_accepted: { type: Boolean },
+        is_rejected: { type: Boolean },
+        call_type: { type: String, enum: ["audio", "video"]},
+      },
     },
     chat_id: { type: Schema.Types.ObjectId },
     react: [

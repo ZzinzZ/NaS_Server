@@ -5,12 +5,9 @@ const messageController = {
   createMessage: async (req, res, next) => {
     try {
       const { chatId } = req.params;
-      // const files = req.files || [];
 
       const images =
-        req.files && req.files.images
-          ? req.files.images.map((file) => file.path)
-          : [];
+        req.files && req.files ? req.files.map((file) => file.path) : [];
 
       const { senderId, text } = req.body;
 
@@ -33,11 +30,12 @@ const messageController = {
       const { chatId } = req.params;
       const { senderId } = req.body;
       console.log("file", req.files);
-      
-      const files = req.files.map(file => ({
-        fileName: file.originalname, // Tên gốc của file
-        filePath: `${file.filename}`, // Đường dẫn trên server
-        fileSize: file.size, // Kích thước file
+
+      const files = req.files.map((file) => ({
+        fileName: file.originalname,
+        filePath: `${file.filename}`,
+        fileSize: file.size,
+        fileType: file.mimetype,
       }));
 
       const message = await messageService.sendFile({
@@ -47,6 +45,28 @@ const messageController = {
       });
       res.created(SYS_MESSAGE.SUCCESS, message);
     } catch (error) {
+      next(error);
+    }
+  },
+
+  createCallMessage: async (req, res, next) => {
+    try {
+      const { chatId } = req.params;
+      const { senderId, callDuration, is_accepted, is_rejected, call_type } =
+        req.body;
+
+      const message = await messageService.createCallMessage({
+        senderId,
+        chatId,
+        callDuration,
+        is_accepted,
+        is_rejected,
+        call_type,
+      });
+      res.created(SYS_MESSAGE.SUCCESS, message);
+    } catch (error) {
+      console.log("Error creating", error);
+
       next(error);
     }
   },
@@ -113,6 +133,8 @@ const messageController = {
       });
       res.ok(SYS_MESSAGE.SUCCESS, reactedMessage);
     } catch (error) {
+      console.log("React", error);
+
       next(error);
     }
   },

@@ -15,6 +15,8 @@ router.post('/article', upload.array("pictures"), PostController.createArticlePo
 
 router.get('/article/:userId', PostController.getUserArticlePosts);
 
+router.get('/list/:userId', PostController.getListPosts);
+
 router.put('/react/:postId', PostController.addReactPost);
 
 router.post('/comments/:postId',upload.single("image"), PostController.addCommentPost);

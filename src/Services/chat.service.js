@@ -257,6 +257,21 @@ const chatService = {
 
     return chats;
   },
+
+  getGroupChatList: async ({userId}) => {
+    const chats = await Chats.find({
+      type: "group",
+      participants: { $elemMatch: { userId } },
+    })
+    .select("avatar chat_name _id")
+    .exec();
+
+    if(!chats) {
+      throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
+    }
+    return chats;
+  },
+  
   findChatsByChatName: async ({ chatName, userId }) => {
     const keyWord = normalizeText(chatName);
     console.log("keyWord: ", keyWord);
@@ -265,7 +280,7 @@ const chatService = {
       chat_name: { $regex: keyWord, $options: "i" },
       $or: [
         { "participants.userId": userId },
-        { created_by: userId }, // hoặc là người tạo
+        { created_by: userId }, 
       ],
     })
       .populate({
@@ -317,7 +332,6 @@ const chatService = {
     return chats;
   },
   findPrivateChatByParticipant: async ({ userId, participantId }) => {
-    // Tìm đoạn chat private với cả userId và participantId trong participants
     const chat = await Chats.findOne({
       type: "private",
       participants: {

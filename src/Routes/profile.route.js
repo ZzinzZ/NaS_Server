@@ -62,5 +62,10 @@ router.patch('/relationship/:userId', authMiddleware, ProfileController.editProf
 //search user
 router.post('/search', ProfileController.searchProfiles);
 
+//get not friends profile
+router.get('/unfriended/:userId', ProfileController.getUnfriendedProfiles);
+//get suggested friends profile
+router.get('/suggested/:userId', ProfileController.getSuggestedProfiles)
+
 
 module.exports = router;

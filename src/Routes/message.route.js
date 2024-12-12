@@ -9,6 +9,8 @@ const router = express.Router();
 router.post("/send/:chatId",upload.array("images"),messageController.createMessage);
 //send file
 router.post("/file/send/:chatId", uploadFile.array("files"), messageController.sendFile);
+//call message
+router.post("/call/:chatId", messageController.createCallMessage);
 // get message
 router.get("/conversation/:chatId/:userId", messageController.getMessages);
 //remove message

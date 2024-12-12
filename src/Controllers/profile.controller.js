@@ -436,6 +436,26 @@ const ProfileController = {
       next(error);
     }
   },
+  // get profile not friend
+  getUnfriendedProfiles: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const result = await ProfileService.getUnfriendedProfiles({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // get profile suggestion
+  getSuggestedProfiles: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const result = await ProfileService.getSuggestedProfiles({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = ProfileController;

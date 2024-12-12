@@ -27,6 +27,17 @@ const verifyRefreshToken = (token) => {
   }
 };
 
+const generateAccessToken = (userId) => {
+  const payload = {
+    jti: Math.random().toString(),
+    iss: process.env.STRINGEE_API_SID_KEY,
+    exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+    userId: userId
+  };
+
+  return jwt.sign(payload, process.env.STRINGEE_API_SECRET_KEY, { algorithm: 'HS256' });
+};
+
 const UserService = {
   // Register
   createUser: async ({ name, email, password, otp }) => {
@@ -94,11 +105,43 @@ const UserService = {
 
     const token = createToken(user._id);
     const refreshToken = createRefreshToken(user._id);
+    const stringeeToken = generateAccessToken(user._id);
 
     return {
       user: user,
       token: token,
       refreshToken: refreshToken,
+      stringeeToken: stringeeToken,
+    };
+  },
+
+  changePasswordWithOTP: async ({ email, otp, newPassword }) => {
+    if (!email || !otp || !newPassword) {
+      throw new HttpException(400, USER_MESSAGES.MISSING_FIELD);
+    }
+
+    if (!validator.isStrongPassword(newPassword)) {
+      throw new HttpException(400, USER_MESSAGES.PASSWORD_INVALID);
+    }
+  
+    const otpVerify = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    if (otpVerify.length === 0 || otpVerify[0].otp !== otp) {
+      throw new HttpException(400, USER_MESSAGES.OTP_INVALID);
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new HttpException(404, USER_MESSAGES.USER_NOT_FOUND);
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+  
+    return {
+      message: USER_MESSAGES.PASSWORD_UPDATED,
+      userId: user._id,
     };
   },
 };

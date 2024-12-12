@@ -15,6 +15,7 @@ const PostRoute = require("../src/Routes/post.route");
 const SearchHistoryRoute = require("../src/Routes/searchHistory.route");
 const ChatRoute = require("../src/Routes/chat.route");
 const MessageRoute = require("../src/Routes/message.route");
+const StringeeRoute = require("../src/Routes/stringee.route");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use("/api/v1/posts", PostRoute);
 app.use("/api/v1/search", SearchHistoryRoute);
 app.use("/api/v1/chats", ChatRoute);
 app.use("/api/v1/messages", MessageRoute);
+app.use("/api/v1/stringee", StringeeRoute );
 
 app.use('/uploadfiles', express.static(path.join(__dirname, 'uploadfiles')));
 

@@ -7,7 +7,7 @@ const Profile = require("../Models/Profile.model");
 
 const isUserBlocked = async (senderId, chat) => {
   const receiverId = chat.participants.find(
-    (participant) => participant.userId.toString() !== senderId.toString()
+    (participant) => participant.userId != senderId
   )?.userId;
 
   if (!receiverId) {
@@ -19,9 +19,7 @@ const isUserBlocked = async (senderId, chat) => {
     throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
   }
 
-  return receiverProfile.blockedUsers.some(
-    (block) => block.userId.toString() === senderId.toString()
-  );
+  return receiverProfile.blockedUsers.some((block) => block.userId == senderId);
 };
 
 const messageService = {
@@ -94,6 +92,52 @@ const messageService = {
     return message;
   },
 
+  createCallMessage: async ({
+    senderId,
+    chatId,
+    callDuration,
+    is_accepted,
+    is_rejected,
+    call_type,
+  }) => {
+    const chat = await Chats.findOne({ _id: chatId });
+
+    if (!chat) {
+      throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
+    }
+    if (chat.type === "private" && (await isUserBlocked(senderId, chat))) {
+      throw new HttpException(403, USER_MESSAGES.BLOCK_EVENT);
+    }
+
+    const messageContent = {
+      text: null,
+      file: null,
+      image: null,
+      call: {
+        callDuration: callDuration,
+        is_accepted: is_accepted,
+        is_rejected: is_rejected,
+        call_type: call_type,
+      },
+    };
+
+    const message = new Messages({
+      sender_id: senderId,
+      chat_id: chatId,
+      content: messageContent,
+      status: { seen_by: [] },
+      react: [],
+      is_deleted_by: [],
+    });
+    chat.last_message = {
+      messId: message._id,
+      senderId: senderId,
+    };
+    await chat.save();
+    await message.save();
+    return message;
+  },
+
   getMessageByChatId: async ({ chatId, userId }) => {
     const chat = await Chats.findOne({ _id: chatId });
     if (!chat) {
@@ -104,7 +148,7 @@ const messageService = {
       chat_id: chatId,
       "is_deleted_by.userId": { $nin: [userId] },
     })
-      .populate("sender_id", "name") // Populate `sender_id` đầu tiên
+      .populate("sender_id", "name")
       .populate({
         path: "reply_to",
         select: "content sender_id",
@@ -221,9 +265,6 @@ const messageService = {
 
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
-    }
-    if (chat.type === "private" && (await isUserBlocked(senderId, chat))) {
-      throw new HttpException(403, USER_MESSAGES.BLOCK_EVENT);
     }
 
     const existingReactIndex = message.react?.findIndex(

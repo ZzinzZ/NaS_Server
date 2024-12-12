@@ -46,6 +46,16 @@ const PostController = {
       next(error);
     }
   },
+  //get list posts
+  getListPosts: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const posts = await PostService.getListPosts({userId});
+      res.ok(SYS_MESSAGE.SUCCESS, posts);
+    } catch (error) {
+      next(error);
+    }
+  },
   //get user article posts
   getUserArticlePosts: async (req, res, next) => {
     try {

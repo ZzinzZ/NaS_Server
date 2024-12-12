@@ -235,6 +235,23 @@ const PostService = {
     });
     return posts;
   },
+  getListPosts: async ({ userId }) => {
+    const profile = await Profile.findOne({ userId }).select("friends").lean();
+    if(!profile) {
+      throw new HttpException(404, USER_MESSAGES.USER_NOT_FOUND);
+    }
+    const friends = profile.friends.map((friend) => friend.userId);
+    const userAndFriendIds = [userId, ...friends];
+
+    const posts = await Posts.find({
+      userId: { $in: userAndFriendIds },
+    })
+    .select("_id userId createdAt")
+    .sort({ createdAt: -1 });
+
+    return posts;
+
+  },
   addReactPost: async ({ postId, userId, emotion }) => {
     const post = await Posts.findById(postId);
     if (!post) {
