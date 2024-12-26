@@ -1,5 +1,5 @@
 const express = require('express');
-const searchHistoryController = require('../Controllers/SearchHistory.controller');
+const searchHistoryController = require('../Controllers/searchHistory.controller');
 
 
 const router = express.Router();
