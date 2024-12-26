@@ -1,6 +1,7 @@
 const otpGenerator = require("otp-generator");
 const OTP = require("../Models/OTP.model");
 const HttpException = require("../core/HttpException");
+const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 
 const OTPService = {
   sendOTP: async ({ email }) => {
@@ -23,7 +24,7 @@ const OTPService = {
   verifyOTP: async ({ email, otp }) => {
     const otpData = await OTP.findOne({ email, otp });
     if (!otpData) {
-      throw new HttpException(404, "Invalid OTP");
+      throw new HttpException(404, SYS_MESSAGE.INVALID_OTP);
     }
     return true;
   },

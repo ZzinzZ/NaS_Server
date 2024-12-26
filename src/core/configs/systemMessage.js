@@ -12,6 +12,7 @@ const SYS_MESSAGE = {
     INVALID_CHAT_TYPE: "Invalid chat type",
     FAILURE_MESSAGE: "Failed to request",
     NO_AUTHORIZATION: "User not authorized to make this request",
+    INVALID_OTP: "Invalid otp",
     
 }
 

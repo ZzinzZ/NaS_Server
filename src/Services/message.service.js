@@ -54,6 +54,7 @@ const messageService = {
       messId: message._id,
       senderId: senderId,
     };
+    chat.delete_by = [];
     await chat.save();
     await message.save();
     return message;
@@ -87,6 +88,7 @@ const messageService = {
       messId: message._id,
       senderId: senderId,
     };
+    chat.delete_by = [];
     await chat.save();
     await message.save();
     return message;
@@ -133,6 +135,7 @@ const messageService = {
       messId: message._id,
       senderId: senderId,
     };
+    chat.delete_by = [];
     await chat.save();
     await message.save();
     return message;
@@ -329,6 +332,7 @@ const messageService = {
       messId: replyMessage._id,
       senderId: userId,
     };
+    chat.delete_by = [];
 
     // Lưu tin nhắn trả lời và chat
     await replyMessage.save();
@@ -351,8 +355,14 @@ const messageService = {
       { chat_id: chatId, "is_deleted_by.userId": { $ne: userId } },
       { $push: { is_deleted_by: { userId } } }
     );
+    const chat = await Chats.findById(chatId);
+    if (!chat) {
+      throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
+    }
+    chat.delete_by.push({ userId });
+  await chat.save();
 
-    return true;
+    return chat;
   },
   getMessageSeenListUsers: async ({ messageId }) => {
     const message = await Messages.findOne({ _id: messageId });

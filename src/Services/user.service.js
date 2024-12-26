@@ -115,12 +115,12 @@ const UserService = {
     };
   },
 
-  changePasswordWithOTP: async ({ email, otp, newPassword }) => {
-    if (!email || !otp || !newPassword) {
+  changePasswordWithOTP: async ({ email, otp, password }) => {
+    if (!email || !otp || !password) {
       throw new HttpException(400, USER_MESSAGES.MISSING_FIELD);
     }
 
-    if (!validator.isStrongPassword(newPassword)) {
+    if (!validator.isStrongPassword(password)) {
       throw new HttpException(400, USER_MESSAGES.PASSWORD_INVALID);
     }
   
@@ -135,7 +135,7 @@ const UserService = {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
     user.password = hashedPassword;
     await user.save();
   

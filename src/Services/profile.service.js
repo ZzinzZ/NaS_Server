@@ -247,6 +247,9 @@ const ProfileService = {
       throw new HttpException(400, USER_MESSAGES.NO_REQUEST);
     }
     receiverProfile.friend_request.splice(requestIndex, 1);
+    senderProfile.sent_request = senderProfile.sent_request.filter(
+      (request) => request.userId.toString() !== receiverId
+    );
     await receiverProfile.save();
     return receiverProfile;
   },

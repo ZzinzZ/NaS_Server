@@ -6,6 +6,7 @@ const errorMiddleware = require("./middlewares/errorMiddleware");
 const uploadFile = require("./middlewares/uploadFile");
 const okResponse = require("./middlewares/okResponse");
 const path = require('path');
+const routes = require("./Routes/index");
 require("dotenv").config();
 
 // Route
@@ -33,13 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(okResponse);
 
 // Routes
-app.use("/api/v1/users", UserRoute);
-app.use("/api/v1/profiles", ProfileRoute);
-app.use("/api/v1/posts", PostRoute);
-app.use("/api/v1/search", SearchHistoryRoute);
-app.use("/api/v1/chats", ChatRoute);
-app.use("/api/v1/messages", MessageRoute);
-app.use("/api/v1/stringee", StringeeRoute );
+app.use("/api/v1", routes);
 
 app.use('/uploadfiles', express.static(path.join(__dirname, 'uploadfiles')));
 

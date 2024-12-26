@@ -36,6 +36,7 @@ const chatService = {
       avatar: null,
       last_message: null,
       nickname: "",
+      delete_by:[]
     });
 
     await newChat.save();
@@ -79,6 +80,7 @@ const chatService = {
       avatar: "",
       last_message: null,
       nickname: "",
+      delete_by:[]
     });
 
     await newChat.save();
@@ -239,7 +241,7 @@ const chatService = {
   },
   getChatsList: async ({ userId }) => {
     const chats = await Chats.find({
-      $or: [{ created_by: userId }, { "participants.userId": userId }],
+      $or: [{ created_by: userId }, { "participants.userId": userId }], "delete_by.userId": { $ne: userId }
     })
       .populate({
         path: "last_message.messId",
@@ -249,39 +251,38 @@ const chatService = {
         },
       })
       .sort({
-        "last_message.messId": -1,
-        createdAt: -1,
         updatedAt: -1,
+        createdAt: -1,
+        "last_message.messId": -1,
+        
       })
       .exec();
 
     return chats;
   },
 
-  getGroupChatList: async ({userId}) => {
+  getGroupChatList: async ({ userId }) => {
     const chats = await Chats.find({
       type: "group",
       participants: { $elemMatch: { userId } },
+      
     })
-    .select("avatar chat_name _id")
-    .exec();
+      .select("avatar chat_name _id")
+      .exec();
 
-    if(!chats) {
+    if (!chats) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
     return chats;
   },
-  
+
   findChatsByChatName: async ({ chatName, userId }) => {
     const keyWord = normalizeText(chatName);
     console.log("keyWord: ", keyWord);
 
     const groupChats = await Chats.find({
       chat_name: { $regex: keyWord, $options: "i" },
-      $or: [
-        { "participants.userId": userId },
-        { created_by: userId }, 
-      ],
+      $or: [{ "participants.userId": userId }, { created_by: userId }],
     })
       .populate({
         path: "last_message.messId",

@@ -8,6 +8,7 @@ const {
 } = require("../Services/user.service");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 const ProfileService = require("../Services/profile.service");
+const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 
 const UserController = {
   //register user
@@ -56,6 +57,26 @@ const UserController = {
       next(error);
     }
   },
+  //Change password
+  async changePassword(req, res, next) {
+    try {
+      const { email, otp, password  } = req.body;
+      await UserService.changePasswordWithOTP({ email, otp, password });
+      res.ok(SYS_MESSAGE.SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // Logout user
+  async logoutUser(req, res, next) {
+    try {
+      res.clearCookie("refreshToken");
+      res.ok(USER_MESSAGES.USER_LOGOUT_SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // Forgot password
   // Refresh token
   async refreshToken(req, res, next) {
     try {

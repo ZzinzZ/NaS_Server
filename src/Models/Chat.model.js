@@ -18,6 +18,12 @@ const ChatsSchema = new Schema(
       messId: { type: Schema.Types.ObjectId, ref: "Messages" },
       senderId: { type: Schema.Types.ObjectId, ref: "Users" },
     },
+    delete_by:[
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "Users" },
+        _id: false,
+      }
+    ]
   },
   { timestamps: true }
 );
