@@ -115,6 +115,14 @@ const UserService = {
     };
   },
 
+  checkUserExited: async ({email}) => {
+    const user = await User.findOne({ email });
+    if (user) {
+      return true;
+    }
+    return false;
+  },
+
   changePasswordWithOTP: async ({ email, otp, password }) => {
     if (!email || !otp || !password) {
       throw new HttpException(400, USER_MESSAGES.MISSING_FIELD);

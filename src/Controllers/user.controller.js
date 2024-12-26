@@ -76,7 +76,27 @@ const UserController = {
       next(error);
     }
   },
-  // Forgot password
+  // check mail exists
+  async checkMailExists(req, res, next) {
+    try {
+      const { email } = req.params;
+      const result = await UserService.checkUserExited({email});
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // resend OTP
+  async resendOTP(req, res, next) {
+    try {
+      const { email } = req.body;
+      await UserService.resendOTP(email);
+      res.ok(USER_MESSAGES.OTP_RESENT_SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // verify OTP
   // Refresh token
   async refreshToken(req, res, next) {
     try {
