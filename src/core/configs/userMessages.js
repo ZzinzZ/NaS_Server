@@ -39,6 +39,12 @@ const USER_MESSAGES = {
     POST_COMMENT_DELETE_SUCCESS: "Your comment has been deleted",
     REPLY_COMMENT_NOT_FOUND:"Comment not found",
     SHARE_POST_SUCCESS: "Share the article successfully",
+    NOT_ENOUGH_PARTICIPANT: "The group must have at least 3 members",
+    DUPLICATE_PARTICIPANTS: "Members have already been added",
+    UNAUTHORIZED: "This action cannot be performed",
+    NOT_FOUND_IN_CHAT: "The user is not a member",
+    BLOCK_EVENT: "You are blocked by this user",
+    
 }
 
 module.exports = {USER_MESSAGES};

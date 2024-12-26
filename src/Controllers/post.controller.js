@@ -33,7 +33,7 @@ const PostController = {
     try {
       const { userId, content } = req.body;
       
-      
+       
       const pictures = req.files ? req.files.map((file) => file.path) : [];
       console.log(pictures);
       const article = await PostService.createArticlePost({
@@ -42,6 +42,16 @@ const PostController = {
         pictures,
       });
       res.created(USER_MESSAGES.POST_CREATED_SUCCESS, article);
+    } catch (error) {
+      next(error);
+    }
+  },
+  //get list posts
+  getListPosts: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const posts = await PostService.getListPosts({userId});
+      res.ok(SYS_MESSAGE.SUCCESS, posts);
     } catch (error) {
       next(error);
     }

@@ -6,13 +6,23 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 router.post('/avatar', upload.single("avatar"),authMiddleware, PostController.createNewAvatar);
+
 router.delete('/:postId', authMiddleware, PostController.deletePost);
+
 router.post('/background', upload.single("background"), PostController.createNewBackground);
+
 router.post('/article', upload.array("pictures"), PostController.createArticlePost);
+
 router.get('/article/:userId', PostController.getUserArticlePosts);
+
+router.get('/list/:userId', PostController.getListPosts);
+
 router.put('/react/:postId', PostController.addReactPost);
+
 router.post('/comments/:postId',upload.single("image"), PostController.addCommentPost);
+
 router.get('/comments/sort-react/:postId', PostController.getPostComments)
+
 router.put('/comments/react/:postId',PostController.reactToComment);
 router.put('/comments/reply/react/:postId',PostController.reactToReplyComment);
 router.post('/share/:postId', PostController.sharePost);
