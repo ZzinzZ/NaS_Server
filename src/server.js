@@ -24,9 +24,10 @@ const uri = process.env.CONNECT_STRING;
 
 // Middleware
 app.use(cors({
-  origin: "*",
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "x-auth-token", "Origin", "X-Requested-With"],
+  credentials: true,    
 }));
 app.use(cookieParser());
 app.use(express.json());
