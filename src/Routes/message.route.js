@@ -45,4 +45,7 @@ router.get(
 //delete chat message
 router.put("/chat-soft-delete", messageController.deleteChatMessages);
 
+//find chat message
+router.get("/find/:chatId", messageController.findMessageByKeyword);
+
 module.exports = router;

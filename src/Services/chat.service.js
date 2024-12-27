@@ -278,7 +278,6 @@ const chatService = {
 
   findChatsByChatName: async ({ chatName, userId }) => {
     const keyWord = normalizeText(chatName);
-    console.log("keyWord: ", keyWord);
 
     const groupChats = await Chats.find({
       chat_name: { $regex: keyWord, $options: "i" },
