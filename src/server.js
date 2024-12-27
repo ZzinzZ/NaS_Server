@@ -24,7 +24,7 @@ const uri = process.env.CONNECT_STRING;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "x-auth-token", "Origin", "X-Requested-With"],
 }));
