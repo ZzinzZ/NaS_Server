@@ -1,5 +1,6 @@
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
+const chatService = require("../Services/chat.service");
 const ProfileService = require("../Services/profile.service");
 
 const ProfileController = {
@@ -167,6 +168,7 @@ const ProfileController = {
         senderId,
         receiverId,
       });
+      await chatService.createPrivateChat({userId: receiverId, participantId: senderId});
       res.ok(USER_MESSAGES.FRIEND_REQUEST_ACCEPTED_SUCCESS, result);
     } catch (error) {
       next(error);
@@ -429,6 +431,26 @@ const ProfileController = {
     try {
       const {userId} = req.params;
       const result = await ProfileService.getFriendRequestSent({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // get profile not friend
+  getUnfriendedProfiles: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const result = await ProfileService.getUnfriendedProfiles({ userId });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // get profile suggestion
+  getSuggestedProfiles: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const result = await ProfileService.getSuggestedProfiles({ userId });
       res.ok(SYS_MESSAGE.SUCCESS, result);
     } catch (error) {
       next(error);

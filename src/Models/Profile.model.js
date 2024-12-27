@@ -9,6 +9,7 @@ const ProfileSchema = new Schema(
       unique: true,
       required: true,
       indexed: true,
+      ref: "Users",
     },
     status: { type: String, enum: ["init", "progress", "complete"] },
     userName: { type: String, required: true },

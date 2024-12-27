@@ -1,5 +1,5 @@
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
-const searchHistoryService = require("../Services/SearchHistory.service");
+const searchHistoryService = require("../Services/searchHistory.service");
 
 const searchHistoryController = {
     deleteSearchHistory: async (req, res, next) => {

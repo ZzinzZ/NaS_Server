@@ -8,6 +8,7 @@ const {
 } = require("../Services/user.service");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 const ProfileService = require("../Services/profile.service");
+const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 
 const UserController = {
   //register user
@@ -51,9 +52,51 @@ const UserController = {
 
       res.ok(USER_MESSAGES.USER_LOGIN_SUCCESS, result);
     } catch (error) {
+      console.log(error);
+      
       next(error);
     }
   },
+  //Change password
+  async changePassword(req, res, next) {
+    try {
+      const { email, otp, password  } = req.body;
+      await UserService.changePasswordWithOTP({ email, otp, password });
+      res.ok(SYS_MESSAGE.SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // Logout user
+  async logoutUser(req, res, next) {
+    try {
+      res.clearCookie("refreshToken");
+      res.ok(USER_MESSAGES.USER_LOGOUT_SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // check mail exists
+  async checkMailExists(req, res, next) {
+    try {
+      const { email } = req.params;
+      const result = await UserService.checkUserExited({email});
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // resend OTP
+  async resendOTP(req, res, next) {
+    try {
+      const { email } = req.body;
+      await UserService.resendOTP(email);
+      res.ok(USER_MESSAGES.OTP_RESENT_SUCCESS);
+    } catch (error) {
+      next(error);
+    }
+  },
+  // verify OTP
   // Refresh token
   async refreshToken(req, res, next) {
     try {

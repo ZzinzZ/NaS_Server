@@ -2,7 +2,6 @@ const nodemailer = require("nodemailer");
 
 const mailSender = async (email, title, body) => {
   try {
-    // Create a Transporter to send emails
     let transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       secure: true,
@@ -11,7 +10,6 @@ const mailSender = async (email, title, body) => {
         pass: process.env.MAIL_PASS,
       },
     });
-    // Send emails to users
     let info = await transporter.sendMail({
       from: "Na Social",
       to: email,
