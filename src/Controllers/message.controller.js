@@ -217,6 +217,19 @@ const messageController = {
       next(error);
     }
   },
+  findMessageByKeyword: async (req, res, next) => {
+    try {
+      const {chatId} = req.params;
+      const { keyword } = req.query;
+      const messages = await messageService.findMessageByKeyword({
+        chatId,
+        keyword
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, messages);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = messageController;

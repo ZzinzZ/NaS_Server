@@ -389,6 +389,14 @@ const messageService = {
     }
     return message.react;
   },
+  findMessageByKeyword: async ({chatId, keyword}) => {
+    const regex = new RegExp(keyword, 'i');
+    const messages = await Messages.find({
+      chat_id: chatId,
+      "content.text": { $regex: regex }
+    }).populate("sender_id", "name").exec();
+    return messages;
+  }
 };
 
 module.exports = messageService;
