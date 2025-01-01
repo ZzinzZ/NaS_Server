@@ -47,6 +47,8 @@ const ProfileService = {
       sent_request: [],
       friends: [],
     });
+    user.profileId = newProfile._id;
+    await user.save();
     await newProfile.save();
     return newProfile;
   },

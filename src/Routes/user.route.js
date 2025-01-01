@@ -19,4 +19,5 @@ router.put('/password/change', UserController.changePassword);
 // check mail exists
 router.get('/checkMail/:email', UserController.checkMailExists);
 
+
 module.exports = router;
