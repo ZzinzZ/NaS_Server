@@ -91,27 +91,32 @@ const chatService = {
   getChatDetails: async ({ chatId }) => {
     const chat = await Chats.findOne({ _id: chatId })
       .populate("created_by")
+      .populate({
+        path: 'participants.userId',
+        select: 'name _id',
+        populate: {
+          path: 'profileId',
+          select: 'userId userName avatar blockedBy blockedUsers friends',
+          populate: {
+            path: 'avatar',
+            select: 'content'
+          }
+        }
+      })
+      .lean()
       .exec();
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
 
-    const participantProfiles = await Profile.find({
-      userId: { $in: chat.participants.map((p) => p.userId) },
-    })
-      .select("userId userName avatar blockedBy blockedUsers friends")
-      .populate("avatar");
+    const participantProfiles = chat.participants.map(participant => participant.userId.profileId);
 
     const sortedParticipantProfiles = chat.participants.map((participant) =>
       participantProfiles.find(
         (profile) => profile.userId.toString() === participant.userId.toString()
       )
     );
-    if (chat.type === "group") {
-      return { chat, participantProfiles: sortedParticipantProfiles };
-    } else {
-      return { chat, participantProfiles: sortedParticipantProfiles };
-    }
+    return { chat, participantProfiles: sortedParticipantProfiles };
   },
 
   leaveChat: async ({ chatId, userId }) => {
@@ -250,12 +255,25 @@ const chatService = {
           select: "name",
         },
       })
+      .populate({
+        path: 'participants.userId',
+        select: 'name _id',
+        populate: {
+          path: 'profileId',
+          select: 'userId userName avatar blockedBy blockedUsers friends',
+          populate: {
+            path: 'avatar',
+            select: 'content'
+          }
+        }
+      })
       .sort({
         updatedAt: -1,
         createdAt: -1,
         "last_message.messId": -1,
         
       })
+      .lean()
       .exec();
 
     return chats;

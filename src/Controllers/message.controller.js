@@ -74,9 +74,12 @@ const messageController = {
   getMessages: async (req, res, next) => {
     try {
       const { chatId, userId } = req.params;
+      const { limit = 15 , skip = 0} = req.query;
       const messages = await messageService.getMessageByChatId({
         chatId,
         userId,
+        limit: parseInt(limit, 10),
+        skip: parseInt(skip, 10)
       });
       res.ok(SYS_MESSAGE.SUCCESS, messages);
     } catch (error) {
