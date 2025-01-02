@@ -266,6 +266,7 @@ const messageService = {
     return unreadCounts; // Trả về mảng các đối tượng chứa chat_id và unreadCount
   },
   reactMessage: async ({ messageId, userId, emotion }) => {
+    if(!messageId) return;
     const message = await Messages.findOne({ _id: messageId });
 
     const chat = await Chats.findOne({ _id: message.chat_id });
@@ -315,7 +316,7 @@ const messageService = {
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND); // Nếu không tìm thấy chat
     }
-    if (chat.type === "private" && (await isUserBlocked(senderId, chat))) {
+    if (chat.type === "private" && (await isUserBlocked(userId, chat))) {
       throw new HttpException(403, USER_MESSAGES.BLOCK_EVENT);
     }
 
