@@ -68,7 +68,7 @@ const PostService = {
       { userId },
       { avatar: newPost._id },
       { new: true }
-    );
+    ).populate('avatar');
 
     return updatedProfile;
   },
@@ -98,7 +98,8 @@ const PostService = {
       { userId },
       { background: newPost._id },
       { new: true }
-    );
+    )
+    .populate('background');
 
     return updatedProfile;
   },
