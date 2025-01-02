@@ -141,16 +141,18 @@ const messageService = {
     return message;
   },
 
-  getMessageByChatId: async ({ chatId, userId }) => {
+  getMessageByChatId: async ({ chatId, userId, limit = 15,skip = 0 }) => {
     const chat = await Chats.findOne({ _id: chatId });
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
-
     const messages = await Messages.find({
       chat_id: chatId,
       "is_deleted_by.userId": { $nin: [userId] },
     })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit + 1) 
       .populate("sender_id", "name")
       .populate({
         path: "reply_to",
@@ -159,10 +161,15 @@ const messageService = {
           path: "sender_id",
           select: "name",
         },
-      });
-    // .sort({ createdAt: -1 });
+      })
+      .lean()
+      const hasMore = messages.length > limit;
+      const resultMessages = messages.slice(0, limit);
 
-    return messages;
+    return {
+      messages: resultMessages.reverse(),
+      hasMore,
+    };
   },
 
   removeMessage: async ({ messageId, userId }) => {
@@ -199,6 +206,7 @@ const messageService = {
     await message.save();
   },
   markAsSeen: async ({ messageId, userId }) => {
+    if(!messageId) return ;
     const message = await Messages.findOne({ _id: messageId });
     if (!message) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
@@ -258,6 +266,7 @@ const messageService = {
     return unreadCounts; // Trả về mảng các đối tượng chứa chat_id và unreadCount
   },
   reactMessage: async ({ messageId, userId, emotion }) => {
+    if(!messageId) return;
     const message = await Messages.findOne({ _id: messageId });
 
     const chat = await Chats.findOne({ _id: message.chat_id });
@@ -307,7 +316,7 @@ const messageService = {
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND); // Nếu không tìm thấy chat
     }
-    if (chat.type === "private" && (await isUserBlocked(senderId, chat))) {
+    if (chat.type === "private" && (await isUserBlocked(userId, chat))) {
       throw new HttpException(403, USER_MESSAGES.BLOCK_EVENT);
     }
 

@@ -5,9 +5,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.post('/avatar', upload.single("avatar"),authMiddleware, PostController.createNewAvatar);
+router.post('/avatar', upload.single("avatar"), PostController.createNewAvatar);
 
-router.delete('/:postId', authMiddleware, PostController.deletePost);
+router.delete('/:postId', PostController.deletePost);
 
 router.post('/background', upload.single("background"), PostController.createNewBackground);
 
