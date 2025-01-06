@@ -117,6 +117,20 @@ const ProfileController = {
     }
   },
 
+  updateProfileName: async (req, res, next) => {
+    try {
+      const {userId} = req.params;
+      const {userName} = req.body;
+      const result = await ProfileService.updateUserName({
+        userId,
+        userName,
+      });
+      res.ok(SYS_MESSAGE.SUCCESS, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // follow a profile
   followProfile: async (req, res, next) => {
     try {

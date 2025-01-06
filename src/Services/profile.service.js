@@ -5,7 +5,6 @@ const SearchHistory = require("../Models/SearchHistory.model");
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 
-
 const ProfileService = {
   //create a new profile
   createProfile: async ({
@@ -104,6 +103,24 @@ const ProfileService = {
       throw new HttpException(404, SYS_MESSAGE.NO_PROFILE);
     }
 
+    return profile;
+  },
+
+  // update userName
+  updateUserName: async ({ userId, userName }) => {
+    const profile = await Profile.findOneAndUpdate(
+      { userId: userId },
+      { $set: { userName: userName } },
+      { new: true }
+    )
+      .populate("avatar")
+      .populate("background")
+      .exec();
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { name: userName } },
+      { new: true }
+    );
     return profile;
   },
 
@@ -644,7 +661,11 @@ const ProfileService = {
     );
     const unfriendedProfiles = await Profile.find({
       userId: { $nin: [...friendIds, userId] },
-    }).select("userId userName avatar").populate("avatar").limit(5).exec();
+    })
+      .select("userId userName avatar")
+      .populate("avatar")
+      .limit(5)
+      .exec();
     return unfriendedProfiles;
   },
   getSuggestedProfiles: async ({ userId }) => {
@@ -658,7 +679,7 @@ const ProfileService = {
     );
 
     const secondDegreeFriends = await Profile.find({
-      userId: { $in: friendIds }, 
+      userId: { $in: friendIds },
     }).select("friends.userId");
 
     const secondDegreeFriendIds = secondDegreeFriends
@@ -679,12 +700,12 @@ const ProfileService = {
       .populate("avatar")
       .lean();
 
-      const result = suggestedProfiles
+    const result = suggestedProfiles
       .map((profile) => ({
         ...profile,
         commonFriends: commonFriendCounts[profile.userId.toString()],
       }))
-      .sort((a, b) => b.commonFriends - a.commonFriends) 
+      .sort((a, b) => b.commonFriends - a.commonFriends)
       .slice(0, 5);
 
     return result;

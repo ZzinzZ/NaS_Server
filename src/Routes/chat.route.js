@@ -1,6 +1,7 @@
 const express = require("express");
 const upload = require("../middlewares/cloudinaryMiddleware");
 const chatController = require("../Controllers/chat.controller");
+const toxicity = require("@tensorflow-models/toxicity");
 
 const router = express.Router();
 
@@ -17,6 +18,12 @@ router.patch(
   "/group/chat-avatar/:chatId",
   upload.single("avatar"),
   chatController.updateChatAvatar
+);
+// update chat background
+router.patch(
+  "/chat-background/:chatId",
+  upload.single("background"),
+  chatController.updateChatBackground
 );
 //add members
 router.post("/group/members/:chatId", chatController.addMember);
@@ -39,5 +46,24 @@ router.get(
 );
 
 router.get("/list/:userId", chatController.getChatsList);
+
+router.post("/checkToxic", async (req, res, next) => {
+  const { message } = req.body;
+  console.log("checkToxic", message);
+  
+  const THRESHOLD = 0.8;
+  const model = await toxicity.load(THRESHOLD);
+
+  
+  const predictions = await model.classify([message]);
+  for(const prediction of predictions) {
+    console.log(prediction.label, prediction.results);
+  }
+  
+  const isToxic = predictions.some((category) => 
+    category.results[0]?.match === true
+  );
+  res.json({ isToxic: isToxic });
+});
 
 module.exports = router;

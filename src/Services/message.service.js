@@ -263,7 +263,7 @@ const messageService = {
       },
     ]);
 
-    return unreadCounts; // Trả về mảng các đối tượng chứa chat_id và unreadCount
+    return unreadCounts; 
   },
   reactMessage: async ({ messageId, userId, emotion }) => {
     if(!messageId) return;

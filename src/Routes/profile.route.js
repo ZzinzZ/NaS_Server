@@ -19,6 +19,9 @@ router.put(
   upload.fields([{ name: "avatar" }, { name: "background" }]),
   ProfileController.updateProfile
 );
+// update profile name
+
+router.put("/update_name/:userId", ProfileController.updateProfileName);
 //follow
 router.put("/follow/:followedId", ProfileController.followProfile);
 //unfollow

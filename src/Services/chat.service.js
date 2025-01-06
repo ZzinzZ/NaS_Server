@@ -1,11 +1,20 @@
 const Chats = require("../Models/Chat.model");
 const Messages = require("../Models/Message.model");
+const Notification = require("../Models/Notification.model");
 const Profile = require("../Models/Profile.model");
 const HttpException = require("../core/HttpException");
 const { SYS_MESSAGE } = require("../core/configs/systemMessage");
 const { USER_MESSAGES } = require("../core/configs/userMessages");
 const normalizeText = require("../utils/lowerString");
 
+const toxicity = require("@tensorflow-models/toxicity");
+let model;
+
+async function loadToxicityModel() {
+  const threshold = 0.7;
+  model = await toxicity.load(threshold);
+  console.log("Toxicity model loaded");
+}
 const chatService = {
   createPrivateChat: async ({ userId, participantId }) => {
     const existingChat = await Chats.findOne({
@@ -36,12 +45,27 @@ const chatService = {
       avatar: null,
       last_message: null,
       nickname: "",
-      delete_by:[]
+      delete_by: [],
     });
 
     await newChat.save();
 
-    return newChat;
+    const populatedChat = await Chats.findById(newChat._id)
+      .populate("created_by")
+      .populate({
+        path: "participants.userId",
+        select: "name _id",
+        populate: {
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
+          populate: {
+            path: "avatar",
+            select: "content",
+          },
+        },
+      });
+
+    return populatedChat;
   },
 
   createGroupChat: async ({ userId, participants, chatName }) => {
@@ -80,28 +104,43 @@ const chatService = {
       avatar: "",
       last_message: null,
       nickname: "",
-      delete_by:[]
+      delete_by: [],
     });
 
     await newChat.save();
 
-    return newChat;
+    const populatedChat = await Chats.findById(newChat._id)
+      .populate("created_by")
+      .populate({
+        path: "participants.userId",
+        select: "name _id",
+        populate: {
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
+          populate: {
+            path: "avatar",
+            select: "content",
+          },
+        },
+      });
+
+    return populatedChat;
   },
 
   getChatDetails: async ({ chatId }) => {
     const chat = await Chats.findOne({ _id: chatId })
       .populate("created_by")
       .populate({
-        path: 'participants.userId',
-        select: 'name _id',
+        path: "participants.userId",
+        select: "name _id",
         populate: {
-          path: 'profileId',
-          select: 'userId userName avatar blockedBy blockedUsers friends',
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
           populate: {
-            path: 'avatar',
-            select: 'content'
-          }
-        }
+            path: "avatar",
+            select: "content",
+          },
+        },
       })
       .lean()
       .exec();
@@ -109,14 +148,7 @@ const chatService = {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
 
-    const participantProfiles = chat.participants.map(participant => participant.userId.profileId);
-
-    const sortedParticipantProfiles = chat.participants.map((participant) =>
-      participantProfiles.find(
-        (profile) => profile.userId.toString() === participant.userId.toString()
-      )
-    );
-    return { chat, participantProfiles: sortedParticipantProfiles };
+    return { chat };
   },
 
   leaveChat: async ({ chatId, userId }) => {
@@ -141,7 +173,26 @@ const chatService = {
   },
 
   updateChatName: async ({ chatId, chatName }) => {
-    const chat = await Chats.findOne({ _id: chatId });
+    const chat = await Chats.findOne({ _id: chatId })
+    .populate({
+      path: "last_message.messId",
+      populate: {
+        path: "sender_id",
+        select: "name",
+      },
+    })
+    .populate({
+      path: "participants.userId",
+      select: "name _id",
+      populate: {
+        path: "profileId",
+        select: "userId userName avatar blockedBy blockedUsers friends",
+        populate: {
+          path: "avatar",
+          select: "content",
+        },
+      },
+    });
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
@@ -150,13 +201,63 @@ const chatService = {
     return chat;
   },
   updateGroupAvatar: async ({ chatId, avatar }) => {
-    const chat = await Chats.findOne({ _id: chatId });
+    const chat = await Chats.findOne({ _id: chatId })
+    .populate({
+      path: "last_message.messId",
+      populate: {
+        path: "sender_id",
+        select: "name",
+      },
+    })
+    .populate({
+      path: "participants.userId",
+      select: "name _id",
+      populate: {
+        path: "profileId",
+        select: "userId userName avatar blockedBy blockedUsers friends",
+        populate: {
+          path: "avatar",
+          select: "content",
+        },
+      },
+    });
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
     chat.avatar = avatar;
     await chat.save();
     return chat;
+  },
+  updateBackground: async ({chatId, background}) => {
+    const updatedChat = await Chats.findOneAndUpdate(
+      { _id: chatId },
+      { background: background },
+      { new: true }
+    ).populate({
+      path: "last_message.messId",
+      populate: {
+        path: "sender_id",
+        select: "name",
+      },
+    })
+    .populate({
+      path: "participants.userId",
+      select: "name _id",
+      populate: {
+        path: "profileId",
+        select: "userId userName avatar blockedBy blockedUsers friends",
+        populate: {
+          path: "avatar",
+          select: "content",
+        },
+      },
+    });
+  
+    if (!updatedChat) {
+      throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
+    }
+  
+    return updatedChat;
   },
   deleteChat: async ({ chatId, userId }) => {
     const chat = await Chats.findOne({ _id: chatId });
@@ -246,7 +347,8 @@ const chatService = {
   },
   getChatsList: async ({ userId }) => {
     const chats = await Chats.find({
-      $or: [{ created_by: userId }, { "participants.userId": userId }], "delete_by.userId": { $ne: userId }
+      $or: [{ created_by: userId }, { "participants.userId": userId }],
+      "delete_by.userId": { $ne: userId },
     })
       .populate({
         path: "last_message.messId",
@@ -256,22 +358,21 @@ const chatService = {
         },
       })
       .populate({
-        path: 'participants.userId',
-        select: 'name _id',
+        path: "participants.userId",
+        select: "name _id",
         populate: {
-          path: 'profileId',
-          select: 'userId userName avatar blockedBy blockedUsers friends',
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
           populate: {
-            path: 'avatar',
-            select: 'content'
-          }
-        }
+            path: "avatar",
+            select: "content",
+          },
+        },
       })
       .sort({
         updatedAt: -1,
         createdAt: -1,
         "last_message.messId": -1,
-        
       })
       .lean()
       .exec();
@@ -283,7 +384,6 @@ const chatService = {
     const chats = await Chats.find({
       type: "group",
       participants: { $elemMatch: { userId } },
-      
     })
       .select("avatar chat_name _id")
       .exec();
@@ -303,12 +403,29 @@ const chatService = {
     })
       .populate({
         path: "last_message.messId",
+        populate: {
+          path: "sender_id",
+          select: "name",
+        },
+      })
+      .populate({
+        path: "participants.userId",
+        select: "name _id",
+        populate: {
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
+          populate: {
+            path: "avatar",
+            select: "content",
+          },
+        },
       })
       .sort({
         "last_message.messId": -1,
         createdAt: -1,
         updatedAt: -1,
       })
+      .lean()
       .exec();
 
     let privateChats = await Chats.find({
@@ -316,17 +433,30 @@ const chatService = {
       $or: [{ created_by: userId }, { "participants.userId": userId }],
     })
       .populate({
-        path: "participants.userId",
-        select: "_id name",
+        path: "last_message.messId",
+        populate: {
+          path: "sender_id",
+          select: "name",
+        },
       })
       .populate({
-        path: "last_message.messId",
+        path: "participants.userId",
+        select: "name _id",
+        populate: {
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
+          populate: {
+            path: "avatar",
+            select: "content",
+          },
+        },
       })
       .sort({
         "last_message.messId": -1,
         createdAt: -1,
         updatedAt: -1,
       })
+      .lean()
       .exec();
 
     privateChats = privateChats.filter((chat) => {
@@ -358,13 +488,107 @@ const chatService = {
           { $elemMatch: { userId: participantId } },
         ],
       },
-    }).select("_id");
+    })
+      .populate("created_by")
+      .populate({
+        path: "participants.userId",
+        select: "name _id",
+        populate: {
+          path: "profileId",
+          select: "userId userName avatar blockedBy blockedUsers friends",
+          populate: {
+            path: "avatar",
+            select: "content",
+          },
+        },
+      });
 
     if (!chat) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);
     }
     return chat;
   },
+  moderateContent: async () => {
+    console.log("run service");
+    
+    await loadToxicityModel();
+    const now = new Date();
+    const halfDayAgo = new Date(now - 12 * 60 * 60 * 1000);
+
+    const groupChats = await Chats.find({ type: "group" });
+    for (const chat of groupChats) {
+      const recentMessages = await Messages.find({
+        chat_id: chat._id,
+        createdAt: { $gte: halfDayAgo },
+        "content.text": { $exists: true, $ne: "" },
+      }).sort({ createdAt: 1 });
+
+      if (recentMessages.length < 5) {
+        console.log(`Skipping chat ${chat._id} due to insufficient messages`);
+        continue;
+      }
+
+      const messageTexts = recentMessages.map((msg) => msg.content.text);
+      const predictions = await model?.classify(messageTexts);
+
+      let toxicMessageCount = 0;
+      for (let i = 0; i < predictions[0].results.length; i++) {
+        if (predictions.some((category) => category.results[i].match)) {
+          toxicMessageCount++;
+        }
+      }
+
+      const toxicityRate = toxicMessageCount / messageTexts.length;
+      let message = "";
+      console.log("toxic message count", toxicMessageCount);
+      console.log("toxic message length",  messageTexts.length);
+
+      
+
+      if (toxicityRate > 0.3 && toxicityRate < 0.6) {
+        console.log("fond warning");
+        
+        message = `your ${chat?.chat_name} chat contains a lot of inappropriate content, please pay attention!`;
+        for (const member of chat.participants) {
+          const notification = new Notification({
+            userId: member?.userId,
+            message: message,
+            type: "chat",
+            seen: false,
+            refChat: chat?._id,
+          });
+          await notification.save();
+        }
+      }
+
+      if (toxicityRate > 0.6) {
+        console.log("find chat toxic rate");
+        
+        message = `Your group ${chat?.chat_name} was disbanded due to inappropriate content`;
+        for (const member of chat.participants) {
+          const notification = new Notification({
+            userId: member?.userId,
+            message: message,
+            type: "chat",
+            seen: false,
+            refChat: null,
+          });
+          await notification.save();
+          await Chats.deleteOne({ _id: chat._id });
+          await Messages.deleteMany({ chat_id: chat._id });
+        }
+      }
+    }
+  },
+  // addChatBackground: async () => {
+  //   console.log("run addChatBackground");
+    
+  //   const chats = await Chats.find();
+  //   for (const chat of chats) {
+  //     chat.background = "";
+  //     await chat.save();
+  //   }
+  // }
 };
 
 module.exports = chatService;
