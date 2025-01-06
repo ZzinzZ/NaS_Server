@@ -17,6 +17,7 @@ const SearchHistoryRoute = require("../src/Routes/searchHistory.route");
 const ChatRoute = require("../src/Routes/chat.route");
 const MessageRoute = require("../src/Routes/message.route");
 const StringeeRoute = require("../src/Routes/stringee.route");
+const chatService = require("./Services/chat.service");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -67,3 +68,6 @@ mongoose
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
+
+setInterval(chatService.moderateContent, 12* 60 * 60 * 1000);
+

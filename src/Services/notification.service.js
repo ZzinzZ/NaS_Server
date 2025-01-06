@@ -61,7 +61,7 @@ const notificationService = {
     const notification = await Notification.findByIdAndUpdate(
       notificationId,
       { seen: true },
-    );
+    ).populate("refChat refUser");
     
     if (!notification) {
       throw new HttpException(404, SYS_MESSAGE.NOT_FOUND);

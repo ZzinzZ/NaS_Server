@@ -11,7 +11,7 @@ const ChatsSchema = new Schema(
         userId: { type: Schema.Types.ObjectId, ref: "Users" },
       },
     ],
-    background: { type: String },
+    background: { type: String, default:"" },
     avatar: { type: String },
     chat_name: { type: String },
     last_message: {

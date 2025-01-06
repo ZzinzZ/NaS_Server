@@ -54,10 +54,18 @@ const chatController = {
   updateChatAvatar: async(req, res, next) => {
     try {
       const { chatId } = req.params;
-      console.log(req.file);
-      
       const avatar = req.file.path;
       const updatedChat = await chatService.updateGroupAvatar({ chatId, avatar });
+      res.ok(SYS_MESSAGE.SUCCESS, updatedChat);
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateChatBackground: async (req, res, next) => {
+    try {
+      const { chatId } = req.params;
+      const  background  = req.file.path;
+      const updatedChat = await chatService.updateBackground({ chatId, background });
       res.ok(SYS_MESSAGE.SUCCESS, updatedChat);
     } catch (error) {
       next(error);
